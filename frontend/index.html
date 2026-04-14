@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScanPro | QR & Barcode Scanner</title>
+  <meta name="description" content="Professional QR and barcode scanner interface" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <div class="app-bg"></div>
+
+  <div class="layout">
+    <main class="main-content">
+      <header class="topbar glass">
+        <a href="#" class="brand">
+          <span class="logo"><i class="fa-solid fa-qrcode"></i></span>
+          <span>ScanPro Suite</span>
+        </a>
+        <div class="topbar-actions">
+          <a href="./scan.html" class="btn btn-secondary">Scan Page</a>
+          <a href="./upload.html" class="btn btn-secondary">Upload Page</a>
+          <button class="btn btn-auth" id="auth-open-btn">
+            <i class="fa-regular fa-user"></i> Login
+          </button>
+          <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <section id="home" class="hero card glass">
+        <p class="eyebrow">Official Scanner Dashboard</p>
+        <h1>QR and Barcode Scanner</h1>
+        <p class="subtitle">Default scanner is QR mode. Use right menu for Barcode mode and other pages.</p>
+        <div class="hero-badges">
+          <span class="badge"><i class="fa-solid fa-crown"></i> Premium Look</span>
+          <span class="badge"><i class="fa-solid fa-shield-halved"></i> Secure Auth</span>
+          <span class="badge"><i class="fa-solid fa-bolt"></i> Smooth UX</span>
+        </div>
+      </section>
+
+      <section id="scanner-qr" class="scanner-section card glass">
+        <div class="section-head">
+          <h2>QR Scanner (Default)</h2>
+          <p>Use camera or image upload for QR code scanning.</p>
+        </div>
+        <div class="scanner-layout">
+          <div class="scanner-card">
+            <div class="camera-box" id="reader-wrap">
+              <div id="reader"></div>
+              <div class="scan-line"></div>
+            </div>
+            <div class="controls">
+              <button id="start-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start Scan</button>
+              <button id="stop-btn" class="btn btn-danger" disabled><i class="fa-solid fa-stop"></i> Stop Scan</button>
+              <button id="upload-btn" class="btn btn-secondary"><i class="fa-solid fa-image"></i> Scan Image</button>
+            </div>
+            <input id="file-input" type="file" accept="image/*" hidden />
+          </div>
+          <div id="result" class="result-card">
+            <div class="section-head small">
+              <h3>Result Display</h3>
+              <p>Decoded content appears here.</p>
+            </div>
+            <div class="input-group">
+              <label for="result-text">Decoded Value</label>
+              <input id="result-text" type="text" placeholder="No result yet..." readonly />
+            </div>
+            <div class="controls">
+              <button id="copy-btn" class="btn btn-secondary"><i class="fa-regular fa-copy"></i> Copy</button>
+              <button id="open-btn" class="btn btn-success"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+              <button id="clear-btn" class="btn btn-ghost"><i class="fa-solid fa-eraser"></i> Clear</button>
+            </div>
+            <div id="status" class="status">Ready to scan in QR mode.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scanner-barcode" class="scanner-section card glass hidden">
+        <div class="section-head">
+          <h2>Barcode Scanner</h2>
+          <p>This mode focuses on barcode-only scanning for product labels and IDs.</p>
+        </div>
+        <div class="mini-card">
+          <p class="mini-title">Barcode Mode Active</p>
+          <p class="mini-text">Use the same camera scanner controls in this mode. Start Scan now detects barcode formats only.</p>
+        </div>
+      </section>
+
+      <section id="account" class="info-section card glass hidden">
+        <h3>Account</h3>
+        <p>Use Login/Register button on top to access your account securely.</p>
+      </section>
+
+      <section id="account-details" class="info-section card glass hidden">
+        <h3>Account Details</h3>
+        <p id="account-current">Current user: Not logged in</p>
+        <p id="account-total">Registered accounts: 0</p>
+      </section>
+
+      <section id="settings" class="info-section card glass hidden">
+        <h3>Settings</h3>
+        <p>Use theme toggle for dark/white background. More settings can be connected with backend later.</p>
+      </section>
+
+      <section id="about" class="info-section card glass hidden">
+        <h3>About</h3>
+        <p>ScanPro is a modern UI for QR and barcode workflows with login, scanner controls, and polished design.</p>
+      </section>
+
+      <footer class="footer">
+        <p>© 2026 ScanPro. Professional Scanner Platform.</p>
+      </footer>
+    </main>
+
+    <aside class="right-navbar glass">
+      <button class="icon-btn mobile-menu" id="mobile-menu" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <nav class="nav-links" id="nav-links">
+        <button class="nav-item active" data-section="scanner-qr"><i class="fa-solid fa-qrcode"></i> QR Scanner</button>
+        <button class="nav-item" data-section="scanner-barcode"><i class="fa-solid fa-barcode"></i> Barcode Scanner</button>
+        <button class="nav-item" data-section="account"><i class="fa-regular fa-user"></i> Account</button>
+        <button class="nav-item" data-section="account-details"><i class="fa-solid fa-address-card"></i> Account Details</button>
+        <button class="nav-item" data-section="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+        <button class="nav-item" data-section="about"><i class="fa-solid fa-circle-info"></i> About</button>
+      </nav>
+    </aside>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <section class="auth-overlay" id="auth-overlay" aria-hidden="true">
+    <div class="auth-card glass">
+      <button class="auth-close" id="auth-close-btn" aria-label="Close auth dialog">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <p class="auth-kicker">Welcome to ScanPro</p>
+      <h3 id="auth-title">Create Account</h3>
+      <p id="auth-subtitle">Register to continue scanning.</p>
+      <div class="input-group">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="input-group">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" placeholder="Enter strong password" autocomplete="current-password" />
+      </div>
+      <button class="btn btn-primary auth-submit" id="auth-submit-btn">
+        <i class="fa-solid fa-user-plus"></i> Register
+      </button>
+      <p class="auth-switch-row">
+        <span id="auth-switch-label">Already have an account?</span>
+        <button id="auth-switch-btn" class="auth-switch-btn">Login</button>
+      </p>
+      <p class="auth-note" id="auth-note">Account data is stored permanently in your browser.</p>
+    </div>
+  </section>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

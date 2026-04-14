@@ -1,0 +1,18 @@
+databases:
+  - name: qr-scanner-db
+    databaseName: qr_scanner
+    user: qr_scanner_user
+
+services:
+  - type: web
+    name: qr-scanner-api
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/server.py
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qr-scanner-db
+          property: connectionString
