@@ -1,21 +1,19 @@
-import json
 import os
 import sqlite3
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Lock
-from urllib.parse import urlparse
+
+from flask import Flask, jsonify, request
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
-FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 USER_FILE = os.path.join(DATA_DIR, "users.txt")
 SQLITE_DB_FILE = os.path.join(DATA_DIR, "users.db")
-HOST = "0.0.0.0"
-PORT = int(os.environ.get("PORT", "5000"))
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+app = Flask(__name__)
 
 file_lock = Lock()
 
@@ -158,167 +156,101 @@ def migrate_legacy_users_if_needed():
         conn.close()
 
 
-class ApiHandler(BaseHTTPRequestHandler):
-    def _send_json(self, status_code, payload):
-        body = json.dumps(payload).encode("utf-8")
-        self.send_response(status_code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-        self.wfile.write(body)
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
 
-    def _send_text_file(self, file_path, content_type):
-        if not os.path.exists(file_path):
-            self._send_json(404, {"error": "Not found"})
-            return
 
-        with open(file_path, "rb") as file:
-            data = file.read()
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"status": "ok", "service": "qr-scanner-api"})
 
-        self.send_response(200)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
 
-    def _read_json_body(self):
-        content_length = int(self.headers.get("Content-Length", "0"))
-        if content_length <= 0:
-            return {}
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
 
-        raw = self.rfile.read(content_length)
-        try:
-            return json.loads(raw.decode("utf-8"))
-        except json.JSONDecodeError:
-            return {}
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+@app.route("/api/account-stats", methods=["GET"])
+def account_stats():
+    total_users = get_user_count()
+    return jsonify({"totalUsers": total_users})
 
-    def do_GET(self):
-        parsed_path = urlparse(self.path)
-        path = parsed_path.path
 
-        if path == "/" or path == "/index.html":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "index.html"), "text/html; charset=utf-8")
-            return
+@app.route("/api/register", methods=["POST", "OPTIONS"])
+def register():
+    if request.method == "OPTIONS":
+        return ("", 204)
 
-        if path == "/scan.html":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "scan.html"), "text/html; charset=utf-8")
-            return
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email", "")).strip().lower()
+    password = str(payload.get("password", "")).strip()
 
-        if path == "/upload.html":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "upload.html"), "text/html; charset=utf-8")
-            return
+    if not email or not password:
+        return jsonify({"error": "Email and password required"}), 400
 
-        if path == "/js/app.js":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "js", "app.js"), "application/javascript; charset=utf-8")
-            return
+    existing_user = find_user(email)
+    if existing_user:
+        return jsonify({"error": "Account already exists"}), 409
 
-        if path == "/js/config.js":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "js", "config.js"), "application/javascript; charset=utf-8")
-            return
+    if create_user(email, password):
+        return jsonify({"message": "Registered"}), 201
 
-        if path == "/css/styles.css":
-            self._send_text_file(os.path.join(FRONTEND_DIR, "css", "styles.css"), "text/css; charset=utf-8")
-            return
+    return jsonify({"error": "Could not create account"}), 500
 
-        if path == "/api/health":
-            self._send_json(200, {"status": "ok"})
-            return
 
-        if path == "/api/account-stats":
-            total_users = get_user_count()
-            self._send_json(200, {"totalUsers": total_users})
-            return
+@app.route("/api/login", methods=["POST", "OPTIONS"])
+def login():
+    if request.method == "OPTIONS":
+        return ("", 204)
 
-        self._send_json(404, {"error": "Not found"})
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get("email", "")).strip().lower()
+    password = str(payload.get("password", "")).strip()
 
-    def do_POST(self):
-        parsed_path = urlparse(self.path)
-        path = parsed_path.path
+    if not email or not password:
+        return jsonify({"error": "Email and password required"}), 400
 
-        if path == "/api/register":
-            payload = self._read_json_body()
-            email = str(payload.get("email", "")).strip().lower()
-            password = str(payload.get("password", "")).strip()
+    user = find_user(email)
+    if user:
+        _, user_password = user
+        if user_password == password:
+            return jsonify({"message": "Login successful"}), 200
 
-            if not email or not password:
-                self._send_json(400, {"error": "Email and password required"})
-                return
+        return jsonify({"error": "Wrong password"}), 401
 
-            existing_user = find_user(email)
-            if existing_user:
-                self._send_json(409, {"error": "Account already exists"})
-                return
+    return jsonify({"error": "Account not found"}), 404
 
-            if create_user(email, password):
-                self._send_json(201, {"message": "Registered"})
-            else:
-                self._send_json(500, {"error": "Could not create account"})
-            return
 
-        if path == "/api/login":
-            payload = self._read_json_body()
-            email = str(payload.get("email", "")).strip().lower()
-            password = str(payload.get("password", "")).strip()
+@app.route("/api/scan-result", methods=["POST", "OPTIONS"])
+def scan_result():
+    if request.method == "OPTIONS":
+        return ("", 204)
 
-            if not email or not password:
-                self._send_json(400, {"error": "Email and password required"})
-                return
-
-            user = find_user(email)
-            if user:
-                _, user_password = user
-                if user_password == password:
-                    self._send_json(200, {"message": "Login successful"})
-                    return
-
-                self._send_json(401, {"error": "Wrong password"})
-                return
-
-            self._send_json(404, {"error": "Account not found"})
-            return
-
-        if path == "/api/scan-result":
-            payload = self._read_json_body()
-            result = str(payload.get("result", "")).strip()
-            timestamp = str(payload.get("timestamp", "")).strip()
-            print(f"[SCAN] {timestamp} -> {result}")
-            self._send_json(200, {"message": "Result received"})
-            return
-
-        self._send_json(404, {"error": "Not found"})
+    payload = request.get_json(silent=True) or {}
+    result = str(payload.get("result", "")).strip()
+    timestamp = str(payload.get("timestamp", "")).strip()
+    print(f"[SCAN] {timestamp} -> {result}")
+    return jsonify({"message": "Result received"})
 
 
 def main():
     init_db()
     migrate_legacy_users_if_needed()
 
-    server = ThreadingHTTPServer((HOST, PORT), ApiHandler)
-
-    print(f"HTTP Server running at http://127.0.0.1:{PORT}")
-    print(f"Open from another device using: http://<YOUR-PC-IP>:{PORT}")
-    print("Note: Camera on mobile will be blocked. Use HTTPS for camera access.")
+    port = int(os.environ.get("PORT", "5000"))
+    debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
 
     if using_postgres():
         print("Using database: PostgreSQL (DATABASE_URL)")
     else:
         print(f"Using database: SQLite ({SQLITE_DB_FILE})")
 
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+    print(f"Flask API running on http://127.0.0.1:{port}")
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)
 
 
 if __name__ == "__main__":

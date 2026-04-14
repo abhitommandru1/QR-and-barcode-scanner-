@@ -1,4 +1,4 @@
 window.SCANPRO_CONFIG = {
-  // Render API URL (update this only if your Render service URL differs).
-  API_BASE_URL: "https://qr-scanner-api.onrender.com"
+  // Set this to your deployed backend URL after hosting on PythonAnywhere.
+  API_BASE_URL: ""
 };
