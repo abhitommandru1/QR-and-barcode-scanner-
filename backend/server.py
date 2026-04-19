@@ -91,6 +91,27 @@ def find_user(email):
         conn.close()
 
 
+def append_user_to_legacy_file(email, password):
+    with file_lock:
+        known_users = set()
+        if os.path.exists(USER_FILE):
+            with open(USER_FILE, "r", encoding="utf-8") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line or "," not in line:
+                        continue
+                    existing_email, _ = line.split(",", 1)
+                    existing_email = existing_email.strip().lower()
+                    if existing_email:
+                        known_users.add(existing_email)
+
+        if email in known_users:
+            return
+
+        with open(USER_FILE, "a", encoding="utf-8") as file:
+            file.write(f"{email},{password}\n")
+
+
 def create_user(email, password):
     conn = get_connection()
     try:
@@ -100,6 +121,10 @@ def create_user(email, password):
         else:
             cursor.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
         conn.commit()
+        try:
+            append_user_to_legacy_file(email, password)
+        except Exception as exc:
+            print(f"[WARN] Could not update legacy users file: {exc}")
         return True
     except Exception:
         return False

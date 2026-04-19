@@ -7,7 +7,7 @@
   <meta name="description" content="Professional QR and barcode scanner interface" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
@@ -19,11 +19,14 @@
       <header class="topbar glass">
         <a href="#" class="brand">
           <span class="logo"><i class="fa-solid fa-qrcode"></i></span>
-          <span>ScanPro Suite</span>
+          <span class="brand-copy">
+            <strong>ScanPro</strong>
+            <small>Scanner Platform</small>
+          </span>
         </a>
         <div class="topbar-actions">
-          <a href="./scan.html" class="btn btn-secondary">Scan Page</a>
-          <a href="./upload.html" class="btn btn-secondary">Upload Page</a>
+          <a href="./scan.html" class="btn btn-secondary"><i class="fa-solid fa-camera"></i> Scan Page</a>
+          <a href="./upload.html" class="btn btn-secondary"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Page</a>
           <button class="btn btn-auth" id="auth-open-btn">
             <i class="fa-regular fa-user"></i> Login
           </button>
@@ -34,26 +37,27 @@
       </header>
 
       <section id="home" class="hero card glass">
-        <p class="eyebrow">Official Scanner Dashboard</p>
-        <h1>QR and Barcode Scanner</h1>
-        <p class="subtitle">Default scanner is QR mode. Use right menu for Barcode mode and other pages.</p>
+        <p class="eyebrow">Premium Scanner Experience</p>
+        <h1>Modern QR & Barcode Workspace</h1>
+        <p class="subtitle">A polished interface for live camera scanning, image decoding, and secure account access in one place.</p>
         <div class="hero-badges">
-          <span class="badge"><i class="fa-solid fa-crown"></i> Premium Look</span>
-          <span class="badge"><i class="fa-solid fa-shield-halved"></i> Secure Auth</span>
-          <span class="badge"><i class="fa-solid fa-bolt"></i> Smooth UX</span>
+          <span class="badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Elegant UI</span>
+          <span class="badge"><i class="fa-solid fa-shield-halved"></i> Protected Auth</span>
+          <span class="badge"><i class="fa-solid fa-gauge-high"></i> Fast Workflow</span>
         </div>
       </section>
 
       <section id="scanner-qr" class="scanner-section card glass">
         <div class="section-head">
-          <h2>QR Scanner (Default)</h2>
-          <p>Use camera or image upload for QR code scanning.</p>
+          <h2>QR Scanner</h2>
+          <p>Default mode for scanning QR codes from camera stream or uploaded image.</p>
         </div>
         <div class="scanner-layout">
           <div class="scanner-card">
             <div class="camera-box" id="reader-wrap">
               <div id="reader"></div>
               <div class="scan-line"></div>
+              <div class="scanner-loading">Initializing camera...</div>
             </div>
             <div class="controls">
               <button id="start-btn" class="btn btn-primary"><i class="fa-solid fa-play"></i> Start Scan</button>
@@ -62,10 +66,11 @@
             </div>
             <input id="file-input" type="file" accept="image/*" hidden />
           </div>
+
           <div id="result" class="result-card">
             <div class="section-head small">
-              <h3>Result Display</h3>
-              <p>Decoded content appears here.</p>
+              <h3>Decoded Result</h3>
+              <p>Captured value appears below with quick actions.</p>
             </div>
             <div class="input-group">
               <label for="result-text">Decoded Value</label>
@@ -84,17 +89,17 @@
       <section id="scanner-barcode" class="scanner-section card glass hidden">
         <div class="section-head">
           <h2>Barcode Scanner</h2>
-          <p>This mode focuses on barcode-only scanning for product labels and IDs.</p>
+          <p>Optimized barcode format detection for products, labels, and inventory IDs.</p>
         </div>
         <div class="mini-card">
-          <p class="mini-title">Barcode Mode Active</p>
-          <p class="mini-text">Use the same camera scanner controls in this mode. Start Scan now detects barcode formats only.</p>
+          <p class="mini-title">Barcode Mode Enabled</p>
+          <p class="mini-text">Use the same scanner controls. Detection automatically switches to supported barcode formats only.</p>
         </div>
       </section>
 
       <section id="account" class="info-section card glass hidden">
         <h3>Account</h3>
-        <p>Use Login/Register button on top to access your account securely.</p>
+        <p>Use secure login or registration from the top action bar to access scanner features.</p>
       </section>
 
       <section id="account-details" class="info-section card glass hidden">
@@ -105,16 +110,16 @@
 
       <section id="settings" class="info-section card glass hidden">
         <h3>Settings</h3>
-        <p>Use theme toggle for dark/white background. More settings can be connected with backend later.</p>
+        <p>Switch between light and dark visual themes instantly with no interruption to scanning.</p>
       </section>
 
       <section id="about" class="info-section card glass hidden">
         <h3>About</h3>
-        <p>ScanPro is a modern UI for QR and barcode workflows with login, scanner controls, and polished design.</p>
+        <p>ScanPro combines a high-end interface with practical QR and barcode workflows for daily use.</p>
       </section>
 
       <footer class="footer">
-        <p>© 2026 ScanPro. Professional Scanner Platform.</p>
+        <p>© 2026 ScanPro. Crafted for premium scanning workflows.</p>
       </footer>
     </main>
 
